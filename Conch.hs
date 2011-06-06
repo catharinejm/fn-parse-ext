@@ -1,13 +1,13 @@
 import Text.ParserCombinators.Parsec
+import System
 
 conchFile = endBy statement (char '\n')
-statement = many (satisfy 
+statement = many anyChar
 
-parseConch :: String -> Either ParseError [String]
-parseConch input = parse conchFile "(error)" input
+parseConch :: [String] -> Either ParseError String
+parseConch [] = []
+parseConch input = (parse conchFile "(error)" input) : parseConch (tail input)
 
-{-main = do c <- getContents
-          case parse conchFile "(stdin)" c of
-               Left e -> do putStrLn "Error parsing input:"
-                            print e
-               Right r -> mapM_ print r-}
+main :: IO ()
+main = do args <- getArgs
+          putStrLn (parseConch args)
