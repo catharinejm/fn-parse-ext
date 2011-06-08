@@ -25,14 +25,38 @@
                                   negated-form)]
              optionized-form)))
 
-(defn crazy-processing* [forms]
+(def conc-and-altify
+  (complex [conc-first (rep+ (except anything (lit '||)))
+            alts (rep* (conc (lit '||)
+                             (rep+ (except anything (lit '||)))))]
+           (letfn [(conc-it! [[x & xs :as rules]]
+                     (if (seq xs)
+                       (cons 'conc rules)
+                       x))]
+             (if-not alts
+               (-> conc-first conc-it! (cons '()) flatten)
+               (cons 'alt
+                     (map conc-it!
+                      (cons conc-first
+                            (map (comp first rest) alts))))))))
+
+(defn deserialize-tokens [forms]
   (for [form forms]
     (if (seq? form)
-      (crazy-processing* form)
+      (deserialize-tokens form)
       (rule-match negate-and-optionize
                   (fn [_] form)
                   (fn [_ _] form)
                   {:remainder (name form)}))))
 
+(defn crazy-processing* [forms]
+  (let [[fst & rst :as deserialized] (deserialize-tokens
+                                       (first
+                                        (conc-and-altify
+                                         {:remainder forms})))]
+    (if (seq rst)
+      deserialized
+      fst)))
+
 (defmacro <> [& rules]
-  `(apply eval (crazy-processing* '~rules)))
+  `(eval (crazy-processing* '~rules)))

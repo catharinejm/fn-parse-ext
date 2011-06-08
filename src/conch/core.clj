@@ -6,9 +6,9 @@
 (def <=> (lit \=))
 (def <space> (lit \space))
 
-(def <assignment> (<> (conc !<=>+ <space>* <=> <space>* !<=>+)))
+(def <assignment> (<> !<=>+ <space>* <=> <space>* !<=>+))
 
-(def <statement> (<> (conc <assignment> <newline>?)))
+(def <statement> (<> <assignment> <newline>?))
 
 (defn parse [script]
   (rule-match (<> <statement>*)
