@@ -7,25 +7,30 @@
 (def <space> (lit \space))
 
 (defn crazy-processing* [forms]
-  (for [form forms
-        :let [fname (name form)]]
-    ((complex [neg? (opt (lit \!))
-               _ (lit \<)
-               name (rep+ (except anything (lit \>)))
-               _ (lit \>)
-               opt? (opt (lit \?))]
-              (let [sym (symbol (str "<" (apply str name) ">"))
-                    negated-form (if neg?
-                                   `(except anything ~sym)
-                                   sym)
-                    optionized-form (if opt?
-                                      `(opt ~negated-form)
-                                      negated-form)]
-                optionized-form))
-     {:remainder fname})))
+  #_(println (str forms))
+  (for [form forms]
+    (if (seq? form)
+      (crazy-processing* form)
+      (rule-match
+       (complex [neg? (opt (lit \!))
+                 _ (lit \<)
+                 name (rep+ (except anything (lit \>)))
+                 _ (lit \>)
+                 opt? (opt (lit \?))]
+                (let [sym (symbol (str "<" (apply str name) ">"))
+                      negated-form (if neg?
+                                     `(except anything ~sym)
+                                     sym)
+                      optionized-form (if opt?
+                                        `(opt ~negated-form)
+                                        negated-form)]
+                  optionized-form))
+       (fn [_] form)
+       (fn [_ _] form)
+       {:remainder (name form)}))))
 
 (defmacro <> [& rules]
-  `(ffirst (crazy-processing* '~rules)))
+  `(apply eval (crazy-processing* '~rules)))
 
 (def assignment (conc (rep+ !<=>)
                       (rep* <space>)
