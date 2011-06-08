@@ -16,14 +16,23 @@
                  _ (lit \<)
                  name (rep+ (except anything (lit \>)))
                  _ (lit \>)
-                 opt? (opt (lit \?))]
+                 rep-val (alt (lit \+)
+                              (lit \*)
+                              (lit \?)
+                              emptiness)]
                 (let [sym (symbol (str "<" (apply str name) ">"))
                       negated-form (if neg?
                                      `(except anything ~sym)
                                      sym)
-                      optionized-form (if opt?
-                                        `(opt ~negated-form)
-                                        negated-form)]
+                      optionized-form (cond
+                                       (= \? rep-val)
+                                       `(opt ~negated-form)
+                                       (= \+ rep-val)
+                                       `(rep+ ~negated-form)
+                                       (= \* rep-val)
+                                       `(rep* ~negated-form)
+                                       :else
+                                       negated-form)]
                   optionized-form))
        (fn [_] form)
        (fn [_ _] form)
