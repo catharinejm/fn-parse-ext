@@ -1,13 +1,13 @@
+module Conch where
+
 import Text.ParserCombinators.Parsec
 import System
 
-conchFile = endBy statement (char '\n')
-statement = many anyChar
+assignment :: Parser String
+assignment = do many1 (noneOf "=")
+                many (char ' ')
+                (char '=')
+                many (char ' ')
+                many1 (noneOf "=")
 
-parseConch :: [String] -> Either ParseError String
-parseConch [] = []
-parseConch input = (parse conchFile "(error)" input) : parseConch (tail input)
 
-main :: IO ()
-main = do args <- getArgs
-          putStrLn (parseConch args)
