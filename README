@@ -1,6 +1,8 @@
-# conch
+# fn-parse-ext
 
-FIXME: write description
+Used to be conch, but I'm co-opting that name. 
+This demoes an extension to fn-parse that allows Regex tokens (*, +, etc) to be used directly
+when statements are passed to the #'<> macro.
 
 ## Usage
 
